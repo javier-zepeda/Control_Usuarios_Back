@@ -1,0 +1,32 @@
+// CARGAR VARIABLES DE ENTORNO
+require('dotenv').config();
+
+// SEGURIDAD: el modo prueba nunca debe quedar activo fuera de desarrollo
+if (process.env.CORREO_PRUEBA && process.env.NODE_ENV !== 'development') {
+    console.error('CORREO_PRUEBA solo se permite con NODE_ENV=development. Quítelo del .env.');
+    process.exit(1);
+}
+
+// IMPORTAR EL SERVIDOR EXPRESS
+const app = require('./app');
+// IMPORTAR LA CONEXIÓN A LA BASE DE DATOS
+const baseDatos = require('./config/baseDatos');
+
+// INICIAR EL SERVIDOR EN EL PUERTO DEFINIDO EN LAS VARIABLES DE ENTORNO
+const puerto = process.env.PUERTO || 3200;
+
+async function iniciarServidor() {
+    try{
+        await baseDatos.authenticate();
+        console.log('Conectado a la base de datos:', process.env.DB_NOMBRE);        
+    } catch (error) {
+        console.error('No se pudo conectar a la base de datos:', error.message);
+        process.exit(1);
+    }
+
+    app.listen(puerto, () => {
+        console.log(`Servidor de Control de Usuarios en http://localhost:${puerto}`);
+    })
+}
+
+iniciarServidor();
